@@ -1,66 +1,92 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta charset="utf-8">
-    <title>Dashboard de Salud de Flota</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9; margin: 0; padding: 20px; color: #333; }
-        .header { margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border-top: 5px solid #34495e; }
-        .card h3 { margin: 0; font-size: 0.9rem; color: #7f8c8d; text-transform: uppercase; }
-        .card .value { font-size: 2rem; font-weight: bold; margin: 10px 0; color: #2c3e50; }
-        
-        /* Colores de estado */
-        .status-green { color: #27ae60 !important; }
-        .status-yellow { color: #f39c12 !important; }
-        .status-red { color: #e74c3c !important; }
-        
-        .table-container { background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
-        thead { background-color: #34495e; color: white; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #edf2f7; }
-        tbody tr:hover { background-color: #f8fafc; }
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
-        .badge-green { background: #e2f9eb; color: #27ae60; }
-        .badge-yellow { background: #fff4e5; color: #f39c12; }
-        .badge-red { background: #ffebee; color: #e74c3c; }
+        /* Encapsulamos todo en #enerkom-app para evitar conflictos */
+        #enerkom-app {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            color: #333;
+            background-color: #f9f9f9;
+            min-height: 100vh;
+        }
+        .header-card {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .unit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .unit-card {
+            background: white;
+            border-left: 5px solid #3498db;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .unit-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .unit-name { font-weight: bold; font-size: 1.1em; display: block; }
+        .unit-id { color: #7f8c8d; font-size: 0.85em; }
+        .status-badge {
+            display: inline-block;
+            background: #e1f5fe;
+            color: #0288d1;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h2>Monitoreo de Rastreabilidad en Tiempo Real</h2>
+
+<div id="enerkom-app">
+    <div class="header-card">
+        <h1>Rastreabilidad Enerkom</h1>
+        <p>Monitoreo de unidades activas</p>
     </div>
 
-    <div class="dashboard-grid">
-        <div class="card">
-            <h3>Total Unidades</h3>
-            <div id="totalUnits" class="value">0</div>
-        </div>
-        <div class="card" style="border-top-color: #27ae60;">
-            <h3>Reportando OK</h3>
-            <div id="reportingUnits" class="value status-green">0</div>
-        </div>
-        <div class="card" style="border-top-color: #f39c12;">
-            <h3>Rastreabilidad</h3>
-            <div id="healthScore" class="value">0%</div>
-        </div>
+    <div id="unitContainer" class="unit-grid">
+        <p>Conectando con el servidor de Geotab...</p>
     </div>
+</div>
 
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Vehículo</th>
-                    <th>ID Dispositivo</th>
-                    <th>Última Comunicación</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody id="vehicleTableBody">
-                <tr><td colspan="4" style="text-align:center;">Cargando datos de la flota...</td></tr>
-            </tbody>
-        </table>
-    </div>
+<script src="https://cdn.jsdelivr.net/gh/Geotab/mg-api-js/dist/mg-api-js.js"></script>
+<script>
+    geotab.addin.rastreabilidad = (api, state) => {
+        return {
+            initialize(api, state, callback) {
+                api.call("Get", { typeName: "Device", resultsLimit: 20 }, (devices) => {
+                    const container = document.getElementById("unitContainer");
+                    container.innerHTML = ""; 
+
+                    devices.forEach(device => {
+                        const card = document.createElement("div");
+                        card.className = "unit-card";
+                        card.innerHTML = `
+                            <span class="unit-name">${device.name}</span>
+                            <span class="unit-id">ID: ${device.id}</span>
+                            <div class="status-badge">En línea</div>
+                        `;
+                        container.appendChild(card);
+                    });
+                    callback();
+                }, (e) => { console.error(e); callback(); });
+            }
+        };
+    };
+</script>
 </body>
 </html>
