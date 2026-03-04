@@ -1,0 +1,46 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+}
+
+.cards {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.card {
+    flex: 1;
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+    text-align: center;
+}
+
+.card.total { background: #2c3e50; }
+.card.ok { background: #27ae60; }
+.card.error { background: #e74c3c; }
+.card.porcentaje { background: #2980b9; }
+
+table {
+    width: 100%;
+    background: white;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.estado-ok { color: #27ae60; font-weight: bold; }
+.estado-error { color: #e74c3c; font-weight: bold; }
